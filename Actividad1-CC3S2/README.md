@@ -35,7 +35,7 @@ Los bancos usan sistema core, eso hace referencia a transferencias bancarias, em
 
 ## 4.2 Ciclo tradicional de dos pasos y silos (limitaciones y anti-patrones)
 
-![](/Actividad1-CC3S2/imagenes/silos-equipos.png)
+![](/Actividad1-CC3S2/Imagenes/silos-equipos.png)
 
 **Limitaciones del ciclo "construcción → operación" sin integración continua:**
 
@@ -105,7 +105,7 @@ Cumplir listas de chequeo no garantiza reducción de riesgo. Dos señales de efi
 
 ## 4.5 CI/CD y estrategias de despliegue
 
-![Pipeline canary](/Actividad1-CC3S2/imagenes/pipeline_canary.png)
+![Pipeline canary](/Actividad1-CC3S2/Imagenes/pipeline_canary.png)
 **Escoge una estrategia para un microservicio**   
 Para el microservicio de autenticación se aplica un **canary release**. Esta estrategia es la más usada porque:  
 - Reduce el riesgo, esto queire decir que solo un porcentaje de usuarios prueba la nueva versión al inicio.  
@@ -132,17 +132,17 @@ Por ello, los **gates deben considerar tanto métricas técnicas como de negocio
 
 ## 4.6 Fundamentos prácticos sin comandos (evidencia mínima) 
 ### 1. HTTP – contrato observable
-![](/Actividad1-CC3S2/imagenes/http-evidencia.png)
+![](/Actividad1-CC3S2/Imagenes/http-evidencia.png)
 **Hallazgos:**  
 - Método: GET  
 - Código de estado: 200   
 
 ### 2. DNS - nombres y TTL
-![](/Actividad1-CC3S2/imagenes/dns-ttl.png)
+![](/Actividad1-CC3S2/Imagenes/dns-ttl.png)
 ### 3.TLS - seguridad en tránsito
-![](/Actividad1-CC3S2/imagenes/tls-cert.png)
+![](/Actividad1-CC3S2/Imagenes/tls-cert.png)
 ### 4. Puertos - estado de runtime
-![](/Actividad1-CC3S2/imagenes/puertos.png)
+![](/Actividad1-CC3S2/Imagenes/puertos.png)
 
 ### 5. 12-Factor - port binding, configuración, logs
 **Port binding:**  
