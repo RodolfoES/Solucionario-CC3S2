@@ -1,12 +1,12 @@
 # Titulo : "Actividad 1: introducción devops, devsecops"
 Nombre: José Rodolfo Estacio Sánchez  
 **Fecha:** 05/09/2025   
-**Tiempo invertido:** 2h   
+**Tiempo invertido:** 4h   
 ## Contexto de entorno usado  
 Winodows 11, Visual Studio Code como editor de texto principal y el   repositorio de las actividadaes se encuentra en GitHub. 
 ## 4.1 DevOps vs. cascada tradicional 
 ## Imagen de comparación : 
-![](imagenes/devops-vs-cascada.png)
+![](/Actividad1-CC3S2/Imagenes/comparativo.png)
 ## Por qué DevOps acelera y reduce riesgos en software para la nube frente a la cascada ? 
 - **FeedBack**: Monitoreo muy continuo que sirve de retroalimentacion para el equipo, lo que garantiza una observabilidad casi en tiempo real.
 - **Pequeños Cambios**: Esto hace que se eviten grandes cambios y se pueda hacer mas facil un rollback.
@@ -35,7 +35,7 @@ Los bancos usan sistema core, eso hace referencia a transferencias bancarias, em
 
 ## 4.2 Ciclo tradicional de dos pasos y silos (limitaciones y anti-patrones)
 
-![](imagenes/silos-equipos.png)
+![](/Actividad1-CC3S2/imagenes/silos-equipos.png)
 
 **Limitaciones del ciclo "construcción → operación" sin integración continua:**
 
@@ -62,4 +62,72 @@ Los bancos usan sistema core, eso hace referencia a transferencias bancarias, em
    - **Impacto:**  
      - Vulnerabilidades críticas se detectan demasiado tarde, generando retrabajos costosos y tardios.  
      - Los parches apresurados o relaizados a ultimahora pueden traer consigo nuevas degradaciones, repitiendo incidentes en cada release.
+## 4.3 Principios y beneficios de DevOps (CI/CD, automatización, colaboración)
+
+**CI y CD en la práctica:**  
+- **Integración continua (CI):** se busca integrar los cambios de código en lotes pequeños, verificando con pruebas automáticas cerca del repositorio. Esto reduce los conflictos y permite detectar errores justo después de que se introducen.  
+- **Entrega continua (CD):** prepara estos cambios para ser desplegados de forma rápida y confiable en distintos entornos. El punto fuerte de la entrega continua está en que las actualizaciones pasen por pruebas y validaciones antes de llegar a el área de producción.  
+
+**Automatización y colaboración:**  
+- La automatización (builds, tests, despliegues) evita tareas repetitivas y asegura mejores resultados.  
+- La colaboración se refuerza porque desarrollo y operaciones comparten métricas, logs y decisiones de despliegue en tiempo real.  
+
+**Práctica Agile como precursora:**  
+- Una reunión diaria ayuda a decidir qué cambios están listos para integrarse y cuáles deben esperar.  
+- Una retrospectiva posterior permite ajustar las reglas del pipeline (por ejemplo, reforzar pruebas en áreas donde hubo fallos).  
+
+**Indicador observable propuesto:**  
+- Tiempo promedio desde que un "Pull Request" queda listo hasta que se despliega en un entorno de pruebas.  
+- Cómo recolectarlo sin pagar herramientas: registrar las marcas de tiempo en los PR (GitHub/GitLab) y compararlas con los logs de despliegue almacenados en el sistema de integración. Con simples bitácoras y registros de commits se obtiene el dato sin depender de plataformas comerciales.
+
+## 4.4 Evolución a DevSecOps (seguridad desde el inicio: SAST/DAST; cambio cultural)
+
+**SAST vs. DAST:**  
+- **SAST (Static Application Security Testing):** análisis estático que se ejecuta temprano, donde se revisa el código fuente y dependencias antes de compilar.  
+- **DAST (Dynamic Application Security Testing):** pruebas dinámicas sobre la aplicación en ejecución, buscando vulnerabilidades mientras responde a peticiones.  
+- Ubicación en pipeline: SAST se ejecuta durante la fase de build/CI, mientras que DAST se aplica en entornos de pruebas o preproducción dentro de CD.  
+
+**Gate mínimo de seguridad con umbrales cuantitativos:**  
+- **Umbral 1:** ningún hallazgo crítico o de severidad alta (CVSS ≥ 7.0) detectado por SAST puede pasar a producción.  
+- **Umbral 2:** al menos un 80% de cobertura de rutas críticas de la aplicación debe ser evaluado en pruebas dinámicas (DAST).  
+
+**Política de excepción:**  
+- En caso de vulnerabilidad crítica no resuelta: se permite una excepción de 7 días, asignada a un **responsable específico** (ej. líder técnico).  
+- Debe incluir un plan de corrección o mitigación temporal (por ejemplo, reglas en un WAF).  
+- Pasado el plazo, la excepción caduca y el hallazgo bloquea el pipeline.  
+
+**Pregunta retadora: Como evitar el “teatro de seguridad”?:**  
+Cumplir listas de chequeo no garantiza reducción de riesgo. Dos señales de eficacia que pueden medirse son:  
+1. **Disminución de hallazgos repetidos en escaneos sucesivos** → indica que el equipo corrige de raíz y no solo parchea.  
+   - *Medición:* comparar informes de SAST/DAST de despliegues consecutivos.  
+2. **Reducción del tiempo de remediación en vulnerabilidades críticas** → evidencia de respuesta ágil.  
+   - *Medición:* registrar la fecha de detección en pipeline y la fecha del commit que corrige el fallo; el objetivo puede ser ≤ 48 h.
+
+## 4.5 CI/CD y estrategias de despliegue
+
+![Pipeline canary](/Actividad1-CC3S2/imagenes/pipeline_canary.png)
+**Escoge una estrategia para un microservicio**   
+Para el microservicio de autenticación se aplica un **canary release**. Esta estrategia es la más usada porque:  
+- Reduce el riesgo, esto queire decir que solo un porcentaje de usuarios prueba la nueva versión al inicio.  
+- Permite observar métricas reales en producción sin exponer a todos los clientes.  
+- Facilita el rollback inmediato si se detectan fallos.
+
+---
+
+**Tabla de Riesgos vs Mitigaciones**
+
+| Riesgo | Mitigación |
+|--------|------------|
+| Regresión funcional (fallos en endpoints de autenticación) | Validación de contratos de API antes de promover. |
+| Costo operativo del doble despliegue | Definir un límite de convivencia (ej. máximo 48 h de canary). |
+| Manejo de sesiones activas| Usar “draining” de sesiones y esquemas compatibles para evitar cortes. |
+--- 
+
+**KPI primario de promoción/abortado:**  
+- **Tasa de errores HTTP 5xx ≤ 0.1%** en una **ventana de observación de 1 hora** tras activar el canary.  
+
+**Pregunta retadora – Métricas de negocio y técnicas deben coexistir:**  
+Aunque el KPI técnico (5xx) se mantenga dentro de lo esperado, una caída en métricas de producto como la **tasa de conversión de login** indica que algo en la experiencia del usuario no funciona bien (ej. fallos de usabilidad o cambios en el flujo de autenticación).  
+Por ello, los **gates deben considerar tanto métricas técnicas como de negocio**, ya que ambas influyen directamente en la calidad del servicio entregado.
+
      
