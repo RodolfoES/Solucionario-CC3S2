@@ -130,4 +130,63 @@ Para el microservicio de autenticación se aplica un **canary release**. Esta es
 Aunque el KPI técnico (5xx) se mantenga dentro de lo esperado, una caída en métricas de producto como la **tasa de conversión de login** indica que algo en la experiencia del usuario no funciona bien (ej. fallos de usabilidad o cambios en el flujo de autenticación).  
 Por ello, los **gates deben considerar tanto métricas técnicas como de negocio**, ya que ambas influyen directamente en la calidad del servicio entregado.
 
+## 4.6 Fundamentos prácticos sin comandos (evidencia mínima) 
+### 1. HTTP – contrato observable
+![](/Actividad1-CC3S2/imagenes/http-evidencia.png)
+**Hallazgos:**  
+- Método: GET  
+- Código de estado: 200   
+
+### 2. DNS - nombres y TTL
+![](/Actividad1-CC3S2/imagenes/dns-ttl.png)
+### 3.TLS - seguridad en tránsito
+![](/Actividad1-CC3S2/imagenes/tls-cert.png)
+### 4. Puertos - estado de runtime
+![](/Actividad1-CC3S2/imagenes/puertos.png)
+
+### 5. 12-Factor - port binding, configuración, logs
+**Port binding:**  
+El servicio no debe depender de un puerto fijo en el código. En su lugar, el puerto se parametriza mediante una **variable de entorno** (`PORT=8080`) o un archivo de configuración externo. Esto permite desplegar la misma aplicación en distintos entornos (desarrollo, pruebas, producción) sin modificar el código fuente.
+
+**Configuración externa:**  
+Las credenciales y endpoints no deben quedar incrustados en el repositorio. Deben manejarse mediante variables de entorno o sistemas de configuración centralizados. De esta forma, se facilita la rotación de claves y la reproducibilidad de despliegues.
+
+**Logs:**  
+Los logs se envían como **flujo estándar (stdout/stderr)** en tiempo de ejecución. Así, cualquier entorno (Docker, Kubernetes, sistema operativo) puede recolectarlos y almacenarlos en un agregador central. Esto evita depender de archivos locales rotados manualmente, los cuales dificultan la observabilidad y la recuperación post-incidente.
+
+**Anti-patrón a evitar:**  
+Guardar **credenciales en el código fuente**. Esto rompe la portabilidad, dificulta la rotación de secretos y expone la aplicación a filtraciones si el repositorio es compartido. Externalizar la configuración asegura mayor seguridad y consistencia.
+
+### 6. Checklist de diagnóstico – incidente de intermitencia
+
+1. **Contrato HTTP**  
+   - *Objetivo:* comprobar método, código y cabeceras.  
+   - *Evidencia esperada:* respuestas 200 con cabeceras de caché/traza.  
+   - *Acción:* si hay 4xx/5xx inesperado, revisar despliegue reciente y considerar rollback.
+
+2. **Resolución DNS**  
+   - *Objetivo:* validar registros (A/CNAME) y TTL.  
+   - *Evidencia esperada:* todas las consultas responden la misma IP o destino.  
+   - *Acción:* si hay mezcla de respuestas por TTL alto, extender ventana de coexistencia o ajustar propagación.
+
+3. **Certificado TLS**  
+   - *Objetivo:* verificar CN/SAN, fechas y emisora.  
+   - *Evidencia esperada:* cert válido, no caducado, CN/SAN coinciden con dominio.  
+   - *Acción:* si falla, renovar el certificado antes de promover.
+
+4. **Puertos en escucha**  
+   - *Objetivo:* confirmar que el servicio escucha en el puerto esperado.  
+   - *Evidencia esperada:* puerto 443/HTTP activo en el proceso correcto.  
+   - *Acción:* si no está en escucha o hay conflicto, liberar y reconfigurar el binding.
+
+5. **Correlación de trazas**  
+   - *Objetivo:* seguir un `X-Request-ID` desde la entrada hasta logs backend.  
+   - *Evidencia esperada:* mismo ID visible en todas las capas.  
+   - *Acción:* si se pierde, habilitar propagación de trazas en el gateway o servicio intermedio.
+
+6. **Evaluación de gates**  
+   - *Objetivo:* revisar KPIs técnicos y de producto en ventana de observación.  
+   - *Evidencia esperada:* errores 5xx ≤ 0.1% y conversión ≥ 95% baseline en 1 h.  
+   - *Acción:* si algún KPI cae fuera de umbral, abortar despliegue y revertir.
+### 4.7 Desafíos de DevOps y mitigaciones
      
