@@ -6,13 +6,14 @@
 pip install flask
 ```
 Se levanta la app Flask indicando el puerto 8080, el mensjae y la version. Esto aplica el principio 12-Factor: configuración por entorno en lugar de "quemar" valores en el código.
+
 ```python
 ##12-Factor:varibles de entorno
 PORT=8080 MESSAGE="Hola CC3S2" RELEASE="v1" python app.py
 ```
 La app empieza a escuchar en http://127.0.0.1:8080 y loguea en stdout.  
 
-![](Imagenes/variables_de_entorno.png)
+![](Imagenes/variables-de-entorno.png)
 
 ### 2. Inspección con "curl"  
 #### Peticion GET:  
@@ -43,3 +44,34 @@ Levantamos algunas peticiones:
 y nos genera:
 
 ![](imagenes/stdout_stderr.png)
+
+## 2) DNS: nombres, registros y caché
+**Meta:** resolver `miapp.local` y observar TTL/caché.
+1. **Hosts local:** agrega `127.0.0.1 miapp.local`
+
+    Agrego la entrada en /etc/hosts para que el nombre "miapp.local" resuelva a 127.0.0.1.
+Esto simula un dominio en mi máquina local, que sera muy útil para las pruebas de laboratorio.
+
+    ![](imagenes/agregar_mi_app_local.png)
+
+2. **Comprueba resolución:**
+
+   * `dig +short miapp.local` (debe devolver `127.0.0.1`).
+   * `getent hosts miapp.local` (muestra la base de resolución del sistema).
+
+     ![](imagenes/gent_hosts_miapplocal.png)
+
+3. **TTL/caché (conceptual):** con `dig example.com A +ttlunits` explica cómo el TTL afecta respuestas repetidas (no cambies DNS público, solo observa).
+
+    Observo el campo TTL (Time To Live) en segundos,  indica cuánto tiempo una respuesta DNS puede guardarse en caché.
+|   Si repito la consulta varias veces, mientras no expire el TTL, la respuesta proviene de caché y no del servidor autoritativo.
+
+    ![](imagenes/dig_example.png)
+
+    ![](imagenes/dig_example_2.png)
+
+4. **Pregunta guía:** ¿Qué diferencia hay entre **/etc/hosts** y una zona DNS autoritativa? ¿Por qué el *hosts* sirve para laboratorio? Explica en 3–4 líneas.  
+
+    `/etc/hosts` es un archivo local que fuerza la resolución de nombres a IPs específicas, útil para laboratorios y pruebas.
+    Una zona DNS autoritativa, en cambio, se gestiona en servidores DNS y es distribuida a través de Internet, permitiendo escalabilidad y actualización centralizada.
+    Para laboratorio usamos /etc/hosts porque no necesitamos montar un servidor DNS completo, basta con mapear el nombre a 127.0.0.1 en local.
